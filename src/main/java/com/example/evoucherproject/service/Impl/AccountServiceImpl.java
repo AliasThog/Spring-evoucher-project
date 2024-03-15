@@ -73,12 +73,12 @@ public class AccountServiceImpl implements AccountService {
             account.setDate(DateUtils.currentDateTime());
             account.setPassword(passwordEncoder.encode(dto.getPassword()));
             account.setStatus(true);
-            account.setRoles(roleService.getRolesByRoleIds(Set.of(1)));
+            account.setRoles(roleService.getRolesByRoleIds(Set.of(2)));
             return ResponseEntity.status(HttpStatus.CREATED).body(new CustomResponse("Account created by User successfully!",
                     HttpStatus.CREATED.value(), accountRepository.save(account)));
         } catch (CustomException e) {
             return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto()));
+                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), ""));
         }
     }
 
