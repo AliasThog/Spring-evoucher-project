@@ -8,6 +8,7 @@ import com.example.evoucherproject.repository.ProductRepository;
 import com.example.evoucherproject.repository.PurchaseRepository;
 import com.example.evoucherproject.repository.VoucherRepository;
 import com.example.evoucherproject.service.PurchaseService;
+import com.example.evoucherproject.service.VoucherService;
 import com.example.evoucherproject.ultil.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,59 +34,60 @@ public class PurchaseServiceImpl implements PurchaseService {
     @Autowired
     private VoucherRepository voucherRepository;
 
+    @Autowired
+    private VoucherService voucherService;
+
     @Override
     public List<String> paymentCustomer(int customerId, int productId) {
-        List<String> ls = new ArrayList<>();
-        Voucher voucher = new Voucher();
+        deleteExpiredVouchersByCustomerId(customerId);
         addOrUpdateCustomerBuyProduct(customerId, productId);
+        Voucher voucher = insertOrUpdateVoucher(customerId, productId);
+        return getInformationCustomerBuyProduct(customerId, productId, voucher);
+    }
 
-        // check customer sau khi mua 5 lần sản phầm
-        if (purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId)) {
-            voucher = insertOrUpdateVoucher(customerId);
-        }
-        applyDiscountDuringLateNight(voucher, customerId);
-        applyDiscountOnSpecialOccasions(voucher, customerId);
-        applyDiscountOnSunday(voucher, customerId);
+    private List<String> getInformationCustomerBuyProduct(int customerId, int productId, Voucher voucher) {
+        Purchase purchase = purchaseRepository.getByCustomerAndProduct(customerId, productId).get();
+        List<String> ls = new ArrayList<>();
         Double money = purchaseRepository.TotalQuantityByCustomerIdAndProductId(customerId, productId);
+        ls.add("Khách hàng id : " + purchase.getCustomer().getCustomerId() + " - " + purchase.getCustomer().getName() + " mua sản phẩm : " + purchase.getProduct().getName());
         ls.add("tổng giá tiền hiện tại : " + money.toString());
         Double amount = money - (money * (voucher.getDiscount()) / 100);
-        ls.add("sau khi áp dụng mã voucher " + voucher.getDiscount() + " : " + amount);
-        voucherRepository.deleteVouchersByCustomerAndEndDate(customerId);
+        ls.add("sau khi áp dụng mã voucher " + voucher.getDiscount() + "% : " + amount);
+        ls.add("Số lượng sản phẩm : " + purchase.getQuantity());
         return ls;
     }
 
-
-    private void applyDiscountDuringLateNight(Voucher voucher, int customerId) {
-        LocalDateTime currentTime = LocalDateTime.now();
-        LocalTime startTime = LocalTime.of(0, 0); // 12h tối
-        LocalTime endTime = LocalTime.of(1, 0); // 1h sáng
-        // Thực hiện giảm giá cho khách hàng từ 12h tối tới 1h sáng
-        if (currentTime.toLocalTime().isAfter(startTime) && currentTime.toLocalTime().isBefore(endTime)) {
-            voucher = insertOrUpdateVoucher(customerId);
-            return;
+    /*    private void applyDiscountDuringLateNight(Voucher voucher, int customerId) {
+            LocalDateTime currentTime = LocalDateTime.now();
+            LocalTime startTime = LocalTime.of(0, 0); // 12h tối
+            LocalTime endTime = LocalTime.of(1, 0); // 1h sáng
+            // Thực hiện giảm giá cho khách hàng từ 12h tối tới 1h sáng
+            if (currentTime.toLocalTime().isAfter(startTime) && currentTime.toLocalTime().isBefore(endTime)) {
+                voucher = insertOrUpdateVoucher(customerId);
+                return;
+            }
         }
-    }
 
-    private void applyDiscountOnSunday(Voucher voucher, int customerId) {
-        LocalDate currentDate = LocalDate.now();
-        // Thực hiện giảm giá sunday hang` tuan`
-        if (currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            // voucher is exits
-            voucher = insertOrUpdateVoucher(customerId);
-            return;
+        private void applyDiscountOnSunday(Voucher voucher, int customerId) {
+            LocalDate currentDate = LocalDate.now();
+            // Thực hiện giảm giá sunday hang` tuan`
+            if (currentDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                // voucher is exits
+                voucher = insertOrUpdateVoucher(customerId);
+                return;
+            }
         }
-    }
 
-    private void applyDiscountOnSpecialOccasions(Voucher voucher, int customerId) {
-        LocalDate currentDate = LocalDate.now();
-        // Kiểm tra nếu ngày hiện tại là một trong các ngày lễ yêu cầu (giáng sinh, tết, ngày khai trương)
-        if (DateUtils.isChristmas(currentDate) || DateUtils.isNewYear(currentDate) || DateUtils.isGrandOpening(currentDate)) {
-            // voucher is exits
-            voucher = insertOrUpdateVoucher(customerId);
-            return;
+        private void applyDiscountOnSpecialOccasions(Voucher voucher, int customerId) {
+            LocalDate currentDate = LocalDate.now();
+            // Kiểm tra nếu ngày hiện tại là một trong các ngày lễ yêu cầu (giáng sinh, tết, ngày khai trương)
+            if (DateUtils.isChristmas(currentDate) || DateUtils.isNewYear(currentDate) || DateUtils.isGrandOpening(currentDate)) {
+                // voucher is exits
+                voucher = insertOrUpdateVoucher(customerId);
+                return;
+            }
         }
-    }
-
+    */
     private void addOrUpdateCustomerBuyProduct(int customerId, int productId) {
         // nếu lần đầu mua hàng
         if (!purchaseRepository.existsByCustomerIdAndProductId(customerId, productId)) {
@@ -105,22 +107,32 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     }
 
-    private Voucher insertOrUpdateVoucher(int customerId) {
-        Optional<Voucher> isVoucher = voucherRepository.findByCustomerCustomerId(customerId);
-        if (voucherRepository.checkCustomerAndStatus(customerId) != null && voucherRepository.checkCustomerAndStatus(customerId)) {
-            if (isVoucher.isPresent()) {
-                isVoucher.get().setDiscount(7);
-                return voucherRepository.save(isVoucher.get());
+    private Voucher insertOrUpdateVoucher(int customerId, int productId) {
+        Optional<Voucher> voucherOptional = voucherRepository.findByCustomerCustomerId(customerId);
+        // nếu voucher tồn tại  và trạng thái bằng true và  còn hàng sử dụng thì sẽ update voucher
+
+        if (voucherOptional.isPresent()) {
+            Voucher voucher = voucherOptional.get();
+            if (voucher.isStatus() == true && DateUtils.isDateToday(voucher.getEndTime())) {
+                voucher.setDiscount(7);
+            }
+            return voucherRepository.save(voucher);
+
+        } else {
+            if (purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId)) {
+                // còn nếu chưa tồn tại mà khách hàng mua 5 lần thì nhận 1 voucher mới
+                voucherService.saveVoucher(customerId, 7);
             }
         }
-        Voucher newVoucher = Voucher.builder()
-                .customer(customerRepository.findById(customerId).get())
-                .discount(7)
-                .status(true)
-                .startTime(new Date())
-                .endTime(DateUtils.getEndDate())
-                .build();
-        return voucherRepository.save(newVoucher);
+        return new Voucher();
     }
 
+    private void deleteExpiredVouchersByCustomerId(int customerId) {
+        Optional<Voucher> isVoucher = voucherRepository.findByCustomerCustomerId(customerId);
+        if (isVoucher.isPresent()) {
+            if (DateUtils.isDateToday(isVoucher.get().getEndTime())) {
+                voucherRepository.delete(isVoucher.get());
+            }
+        }
+    }
 }

@@ -20,9 +20,11 @@ public class Voucher {
     private int voucherId;
 
     @Column(nullable = false)
+    @Temporal(TemporalType.DATE)
     private Date startTime;
 
     @Column(nullable = false)
+    @Temporal(TemporalType.DATE)
     private Date endTime;
 
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
@@ -30,8 +32,10 @@ public class Voucher {
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private boolean status;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "customerId")
     private Customer customer;
+
+
 }
 

@@ -1,5 +1,6 @@
 package com.example.evoucherproject.auth.jwt;
 
+import com.example.evoucherproject.exception.CustomException;
 import com.example.evoucherproject.ultil.RequestUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,17 +8,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -28,36 +29,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService customUserDetailsService;
 
-    @Autowired
-    private LogoutHandler logoutHandler;
+    @Value("${user_to_access_url}")
+    private String[] userAccessUrls;
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-
-        if (path.equals("/auth/login-jwt") || path.equals("/accounts/create")) {
-            // Không thực hiện xác thực token cho các yêu cầu /auth/login-jwt và /accounts/create
+        if (isAccessAllowed(path)) {
             filterChain.doFilter(request, response);
             return;
         }
-        String token = RequestUtils.getTokenFromRequest(request);
+        try {
+            String jwt = RequestUtils.getTokenFromRequest(request);
+            if (jwt.equals("token_null") || !jwtTokenProvider.validateToken(jwt)) {
+                throw new CustomException("token ko hop le", HttpStatus.UNAUTHORIZED);
+            }
+            String username = jwtTokenProvider.getUsernameFromToken(jwt);
 
-        if (!token.equals("token_null") && jwtTokenProvider.validateToken(token)) {
-            String username = jwtTokenProvider.getUsernameFromToken(token);
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        }else{
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.getWriter().write("Invalid token");
-            response.getWriter().flush();
-            response.getWriter().close();
+            // mục đích đại diện người dùng đã được xác thực
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities());
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (CustomException e) {
+            SecurityContextHolder.clearContext();
+            response.setContentType("application/json");
+            response.setStatus(e.getHttpStatus().value());
+            response.getWriter().write(e.getMessage());
             return;
         }
 
         filterChain.doFilter(request, response);
+    }
+    private boolean isAccessAllowed(String path) {
+        return Arrays.stream(userAccessUrls)
+                .anyMatch(url -> url.equals(path));
     }
 }

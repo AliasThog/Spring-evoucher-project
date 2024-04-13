@@ -20,16 +20,16 @@ public class VoucherController {
 
     @GetMapping("/3_percent/{customerId}")
     public ResponseEntity<CustomResponse> claimVoucherWith3PercentDiscount(@PathVariable(name = "customerId") int customerId) {
-        return voucherService.saveVoucher(customerId,3);
+        return ResponseEntity.ok().body(voucherService.saveVoucher(customerId,3));
     }
 
     @GetMapping("/5_percent/{customerId}")
     public ResponseEntity<CustomResponse> claimVoucherWith5PercentDiscount(@PathVariable(name = "customerId") int customerId) {
-        return voucherService.saveVoucher(customerId,5);
+        return ResponseEntity.ok().body(voucherService.saveVoucher(customerId,5));
     }
 
     @GetMapping("/7_percent/{customerId}")
     public ResponseEntity<CustomResponse> claimVoucherWith7PercentDiscount(@PathVariable(name = "customerId") int customerId) {
-        return voucherService.saveVoucher(customerId,7);
+        return ResponseEntity.ok().body(voucherService.saveVoucher(customerId,7));
     }
 }

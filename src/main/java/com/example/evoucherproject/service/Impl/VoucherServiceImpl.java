@@ -27,7 +27,7 @@ public class VoucherServiceImpl implements VoucherService {
     private CustomerRepository customerRepository;
     // IO , Date and Time , JPQL , SQL
     @Override
-    public ResponseEntity<CustomResponse> saveVoucher(int customerId, int discount) {
+    public CustomResponse saveVoucher(int customerId, int discount) {
         try {
             Optional<Customer> customer = customerRepository.findById(customerId);
             if (!customer.isPresent()) {
@@ -41,12 +41,10 @@ public class VoucherServiceImpl implements VoucherService {
                     .endTime(DateUtils.getEndDate())
                     .build();
             if (!voucherRepository.existsByCustomerCustomerId(customerId)) voucherRepository.save(voucher);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new CustomResponse("You have received a " + discount + "% discount coupon !", HttpStatus.OK.value(), voucher));
+            return new CustomResponse("You have received a " + discount + "% discount coupon !", HttpStatus.OK.value(), "voucher");
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus())
-                    .body(new CustomResponse(e.getMessage(), HttpStatus.OK.value(), new Voucher()));
+            return new CustomResponse(e.getMessage(), HttpStatus.OK.value(), new Voucher());
         }
     }
-
+        //  thêm kh sẽ được theo voucher với đk như nào, đảm bảo kh tồn tại , thứ 2 nếu kh chưa có voucher sẽ thêm voucher , còn có rồi ko canan thêm vào b
 }

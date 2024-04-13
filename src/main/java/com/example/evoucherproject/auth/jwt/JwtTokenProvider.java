@@ -34,46 +34,16 @@ public class JwtTokenProvider {
 
     // xác thực token
     public boolean validateToken(String token) {
-        boolean isToken = false;
         try {
             Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
-            isToken =  true;
-        } catch (SignatureException ex) {
-
-        } catch (ExpiredJwtException ex) {
-
-        } catch (MalformedJwtException ex) {
-
-        } catch (UnsupportedJwtException ex) {
-
-        } catch (IllegalArgumentException ex) {
-
-        }
-        return isToken;
-    }
-    public void validateTokenException(String token) {
-        try {
-            Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
-        } catch (SignatureException ex) {
-            // Invalid JWT signature
-            throw new CustomException("Invalid JWT signature", HttpStatus.UNAUTHORIZED);
-        } catch (ExpiredJwtException ex) {
-            // Expired JWT token
-            throw new CustomException("Expired JWT token", HttpStatus.UNAUTHORIZED);
-        } catch (MalformedJwtException ex) {
-            // Invalid JWT token
-            throw new CustomException("Invalid JWT token", HttpStatus.UNAUTHORIZED);
-        } catch (UnsupportedJwtException ex) {
-            // Unsupported JWT token
-            throw new CustomException("Unsupported JWT token", HttpStatus.UNAUTHORIZED);
-        } catch (IllegalArgumentException ex) {
-            // JWT claims string is empty
-            throw new CustomException("JWT claims string is empty", HttpStatus.UNAUTHORIZED);
+            return true;
+        } catch (JwtException ex) {
+            return false;
         }
     }
+
 
     // Lấy thông tin user từ jwt
-
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
         return claims.getSubject();

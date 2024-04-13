@@ -1,7 +1,6 @@
 package com.example.evoucherproject.config;
 
 import com.example.evoucherproject.auth.handlers.CustomAccessDeniedHandler;
-import com.example.evoucherproject.auth.handlers.JwtSessionStorageLogoutHandler;
 import com.example.evoucherproject.auth.jwt.JwtAuthenticationFilter;
 import com.example.evoucherproject.auth.userdetails.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import com.example.evoucherproject.enums.RoleType;
@@ -27,16 +25,18 @@ import com.example.evoucherproject.enums.RoleType;
 @Configuration
 public class WebSecurityConfig {
     @Value("${user_to_access_url}")
-    private String[] UserAccessUrls;
+    private String[] userAccessUrls;
     @Value("${authority_to_access_url}")
     private String[] authorityToAccessUrls;
     @Value("${default_success_url}")
     private String successUrls;
 
+/*
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
     }
+*/
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -53,10 +53,6 @@ public class WebSecurityConfig {
         return new CustomAccessDeniedHandler();
     }
 
-    @Bean
-    public LogoutHandler jwtSessionStorageLogoutHandler() {
-        return new JwtSessionStorageLogoutHandler();
-    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -80,7 +76,7 @@ public class WebSecurityConfig {
 
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(UserAccessUrls[0], UserAccessUrls[1]).permitAll()
+                        .requestMatchers(userAccessUrls).permitAll()
                         .requestMatchers(authorityToAccessUrls[0]).hasAuthority(RoleType.USER.name())
                         .requestMatchers(authorityToAccessUrls[1]).hasAuthority(RoleType.ADMIN.name())
                         .anyRequest().authenticated()
@@ -93,11 +89,10 @@ public class WebSecurityConfig {
                         .clearAuthentication(true)
                         .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout"))
                         .logoutSuccessUrl("/login")
-                        .addLogoutHandler(jwtSessionStorageLogoutHandler())
                         .deleteCookies("JSESSIONID")
                         .permitAll()
-                )
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                );
+              /*  .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);*/
 
         return http.build();
     }

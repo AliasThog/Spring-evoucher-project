@@ -35,10 +35,6 @@ public class AuthController {
         return ResponseEntity.ok(new CustomResponse("Welcome come USER", HttpStatus.OK.value(), ""));
     }
 
-    @GetMapping("/403")
-    public ResponseEntity<String> accessDenied() {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
-    }
     @GetMapping("/home")
     public ResponseEntity<CustomResponse> home(Authentication authentication ) {
         return accountService.getUserInfoAfterAuthentication(authentication);
@@ -48,8 +44,4 @@ public class AuthController {
         return ResponseEntity.ok("/login");
     }
 
-    @GetMapping("/hello")
-    public ResponseEntity<CustomResponse> hello() {
-        return ResponseEntity.ok(new CustomResponse("Welcome come", HttpStatus.OK.value(), ""));
-    }
 }

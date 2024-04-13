@@ -14,15 +14,11 @@ import java.util.Optional;
 
 @Repository
 public interface VoucherRepository extends JpaRepository<Voucher,Integer> {
-
+    // tim kiem id
     //check status voucher
     @Query("SELECT CASE WHEN  v.status = true THEN true ELSE false END  FROM Voucher v where v.customer.customerId = :customerId")
     Boolean checkCustomerAndStatus( @Param("customerId") int customerId);
 
-    // insert voucher
-    @Modifying
-    @Query(value = "INSERT INTO Voucher (status, startTime, endTime, discount, customerId) VALUES (true, CURRENT_TIMESTAMP, FUNCTION('DATE_ADD', CURRENT_TIMESTAMP, 'INTERVAL 3 DAY'), :discount, :customerId) RETURNING *", nativeQuery = true)
-    Voucher insertVoucherStatusAndDates(@Param("discount") double discount, @Param("customerId") int customerId);
 
     // check customer of voucher is exits
     boolean existsByCustomerCustomerId(int customerId);
@@ -30,8 +26,9 @@ public interface VoucherRepository extends JpaRepository<Voucher,Integer> {
     // trả về dữ liệu  voucher theo id customer
     Optional<Voucher> findByCustomerCustomerId(int customerId);
 
-    // delete voucher neu qua han
-    @Modifying
-    @Query("DELETE FROM Voucher v WHERE v.customer.customerId = :customerId AND FUNCTION('DATE', v.endTime) = FUNCTION('CURRENT_DATE')")
-    void deleteVouchersByCustomerAndEndDate(@Param("customerId") int customerId);
+
+    //
+    @Query("SELECT v FROM Voucher v where v.customer.customerId = :customerId")
+    Voucher findByCustomerId(@Param("customerId") int customerId);
+
 }
