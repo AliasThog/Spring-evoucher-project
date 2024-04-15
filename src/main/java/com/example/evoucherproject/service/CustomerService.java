@@ -7,6 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 
 public interface CustomerService {
-    ResponseEntity<CustomResponse> getByIdCustomer(Integer id);
-    ResponseEntity<CustomResponse> createEmployee(CreateCustomerDto dto, BindingResult result);
+    CustomResponse getByIdCustomer(Integer id);
+    CustomResponse createEmployee(CreateCustomerDto dto, BindingResult result);
 }

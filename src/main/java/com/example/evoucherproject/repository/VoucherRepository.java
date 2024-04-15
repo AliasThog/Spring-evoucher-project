@@ -27,8 +27,4 @@ public interface VoucherRepository extends JpaRepository<Voucher,Integer> {
     Optional<Voucher> findByCustomerCustomerId(int customerId);
 
 
-    //
-    @Query("SELECT v FROM Voucher v where v.customer.customerId = :customerId")
-    Voucher findByCustomerId(@Param("customerId") int customerId);
-
 }

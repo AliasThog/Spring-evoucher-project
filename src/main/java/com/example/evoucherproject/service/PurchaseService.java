@@ -1,8 +1,10 @@
 package com.example.evoucherproject.service;
 
 
+import com.example.evoucherproject.model.dto.CustomResponse;
+
 import java.util.List;
 
 public interface PurchaseService {
-    List<String> paymentCustomer(int customerId , int productId);
+    CustomResponse paymentCustomer(int customerId , int productId);
 }

@@ -11,14 +11,13 @@ import com.example.evoucherproject.model.dto.request.account.CreateAccountByUser
 import com.example.evoucherproject.model.dto.request.account.LoginUserDto;
 import com.example.evoucherproject.model.dto.request.customer.CreateCustomerDto;
 import com.example.evoucherproject.model.entity.Account;
+import com.example.evoucherproject.model.entity.Customer;
 import com.example.evoucherproject.repository.AccountRepository;
 import com.example.evoucherproject.service.AccountService;
 import com.example.evoucherproject.service.RoleService;
 import com.example.evoucherproject.ultil.AuthenticationUtils;
 import com.example.evoucherproject.ultil.DateUtils;
-import com.example.evoucherproject.ultil.RequestUtils;
 import com.example.evoucherproject.ultil.ValidationUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,6 +73,7 @@ public class AccountServiceImpl implements AccountService {
             account.setPassword(passwordEncoder.encode(dto.getPassword()));
             account.setStatus(true);
             account.setRoles(roleService.getRolesByRoleIds(Set.of(1)));
+            account.setCustomer(Customer.builder().name(account.getUsername()).account(account).build());
             return ResponseEntity.status(HttpStatus.CREATED).body(new CustomResponse("Account created by User successfully!",
                     HttpStatus.CREATED.value(), accountRepository.save(account)));
         } catch (CustomException e) {
@@ -93,8 +93,9 @@ public class AccountServiceImpl implements AccountService {
             account.setPassword(passwordEncoder.encode(dto.getPassword()));
             account.setStatus(dto.isStatus());
             account.setRoles(roleService.getRolesByRoleIds(dto.getRoleId()));
+
             return ResponseEntity.status(HttpStatus.CREATED).body(new CustomResponse("Account created by Admin successfully!",
-                    HttpStatus.CREATED.value(), accountRepository.save(account)));
+                    HttpStatus.CREATED.value(),  accountRepository.save(account)));
         } catch (CustomException e) {
             return ResponseEntity.status(e.getHttpStatus()).body(
                     new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto()));

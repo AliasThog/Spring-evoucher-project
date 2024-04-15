@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import com.example.evoucherproject.enums.RoleType;
@@ -31,12 +32,10 @@ public class WebSecurityConfig {
     @Value("${default_success_url}")
     private String successUrls;
 
-/*
-    @Bean
+/*    @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
-    }
-*/
+    }*/
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -76,7 +75,7 @@ public class WebSecurityConfig {
 
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(userAccessUrls).permitAll()
+                        .requestMatchers(userAccessUrls[0],userAccessUrls[1],userAccessUrls[2],userAccessUrls[3]).permitAll()
                         .requestMatchers(authorityToAccessUrls[0]).hasAuthority(RoleType.USER.name())
                         .requestMatchers(authorityToAccessUrls[1]).hasAuthority(RoleType.ADMIN.name())
                         .anyRequest().authenticated()
@@ -91,8 +90,8 @@ public class WebSecurityConfig {
                         .logoutSuccessUrl("/login")
                         .deleteCookies("JSESSIONID")
                         .permitAll()
-                );
-              /*  .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);*/
+                )
+                /*.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)*/;
 
         return http.build();
     }

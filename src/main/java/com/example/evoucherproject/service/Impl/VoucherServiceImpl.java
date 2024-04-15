@@ -6,6 +6,8 @@ import com.example.evoucherproject.model.entity.Customer;
 import com.example.evoucherproject.model.entity.Voucher;
 import com.example.evoucherproject.repository.CustomerRepository;
 import com.example.evoucherproject.repository.VoucherRepository;
+import com.example.evoucherproject.service.AccountService;
+import com.example.evoucherproject.service.CustomerService;
 import com.example.evoucherproject.service.VoucherService;
 import com.example.evoucherproject.ultil.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,26 +27,40 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Autowired
     private CustomerRepository customerRepository;
-    // IO , Date and Time , JPQL , SQL
+
     @Override
     public CustomResponse saveVoucher(int customerId, int discount) {
+
+        // nếu customer ko tồn tại trong voucher sẽ báo lỗi
+        // voucher sẽ 2 loại update hay new mới
         try {
             Optional<Customer> customer = customerRepository.findById(customerId);
-            if (!customer.isPresent()) {
-                throw new CustomException("Customer does not exist!", HttpStatus.NOT_FOUND);
+            Optional<Voucher> voucher = voucherRepository.findByCustomerCustomerId(customerId);
+
+            if (!customer.isPresent() && !voucher.isPresent()) {
+                throw new CustomException("Your id  " + customerId + "customer does not exist .", HttpStatus.NOT_FOUND);
             }
-            Voucher voucher = Voucher.builder()
-                    .customer(customer.get())
-                    .discount(discount)
-                    .status(true)
-                    .startTime(new Date())
-                    .endTime(DateUtils.getEndDate())
-                    .build();
-            if (!voucherRepository.existsByCustomerCustomerId(customerId)) voucherRepository.save(voucher);
+            voucher.ifPresentOrElse(
+                    v -> {
+                        v.setDiscount(discount);
+                        voucherRepository.save(v);
+                    },
+                    () -> {
+                        Voucher newVoucher = Voucher.builder()
+                                .customer(customer.get())
+                                .discount(discount)
+                                .status(true)
+                                .startTime(new Date())
+                                .endTime(DateUtils.getEndDate())
+                                .build();
+                        voucherRepository.save(newVoucher);
+                    }
+            );
             return new CustomResponse("You have received a " + discount + "% discount coupon !", HttpStatus.OK.value(), "voucher");
+
         } catch (CustomException e) {
-            return new CustomResponse(e.getMessage(), HttpStatus.OK.value(), new Voucher());
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new Voucher());
         }
     }
-        //  thêm kh sẽ được theo voucher với đk như nào, đảm bảo kh tồn tại , thứ 2 nếu kh chưa có voucher sẽ thêm voucher , còn có rồi ko canan thêm vào b
+    //  thêm kh sẽ được theo voucher với đk như nào, đảm bảo kh tồn tại , thứ 2 nếu kh chưa có voucher sẽ thêm voucher , còn có rồi ko canan thêm vào b
 }

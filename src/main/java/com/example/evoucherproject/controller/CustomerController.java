@@ -19,11 +19,7 @@ public class CustomerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CustomResponse> getCustomerById(@PathVariable(name = "id") Integer id) {
-        return customerService.getByIdCustomer(id);
+        return ResponseEntity.ok().body(customerService.getByIdCustomer(id));
     }
 
-    @PostMapping()
-    public ResponseEntity<CustomResponse> createCustomer(@Valid @RequestBody CreateCustomerDto dto, BindingResult result) {
-        return customerService.createEmployee(dto, result);
-    }
 }

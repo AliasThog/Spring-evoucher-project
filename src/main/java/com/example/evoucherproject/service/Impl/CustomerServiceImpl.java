@@ -24,25 +24,23 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerRepository customerRepository;
 
     @Override
-    public ResponseEntity<CustomResponse> getByIdCustomer(Integer id) {
+    public CustomResponse getByIdCustomer(Integer id) {
         try {
             Optional<Customer> exitsCustomer = customerRepository.findById(id);
             if (!exitsCustomer.isPresent()) {
                 throw new CustomException("Khach hang ko tim thay!", HttpStatus.NOT_FOUND);
             }
-
-            return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse("Create customer with your id  " + id + "successfully!",
-                    HttpStatus.OK.value(), exitsCustomer));
+            return new CustomResponse("Create customer with your id  " + id + "successfully!",
+                    HttpStatus.OK.value(), exitsCustomer);
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), ""));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
         }
 
     }
 
 
     @Override
-    public ResponseEntity<CustomResponse> createEmployee(CreateCustomerDto dto, BindingResult result) {
+    public CustomResponse createEmployee(CreateCustomerDto dto, BindingResult result) {
         try {
             // id phone đã tồn tại ko đc thêm mới
             if (customerRepository.existsByPhone(dto.getPhone())) {
@@ -52,11 +50,10 @@ public class CustomerServiceImpl implements CustomerService {
                 throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
             }
             Customer customer = DataMapper.toEntity(dto, Customer.class);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new CustomResponse("Customer created successfully!",
-                    HttpStatus.CREATED.value(), customerRepository.save(customer)));
+            return new CustomResponse("Customer created successfully!",
+                    HttpStatus.CREATED.value(), customerRepository.save(customer));
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto()));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto());
         }
 
     }

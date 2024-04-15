@@ -18,7 +18,7 @@ public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
     @GetMapping("/{customerId}/{productId}")
-    public ResponseEntity<List<String>> paymentCustomer(@PathVariable(name = "customerId") Integer customerId, @PathVariable(name = "productId") Integer productId) {
-        return ResponseEntity.status(HttpStatus.OK).body(purchaseService.paymentCustomer(customerId,productId));
+    public ResponseEntity<CustomResponse> paymentCustomer(@PathVariable(name = "customerId") Integer customerId, @PathVariable(name = "productId") Integer productId) {
+        return ResponseEntity.ok().body(purchaseService.paymentCustomer(customerId,productId));
     }
 }

@@ -20,12 +20,13 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Integer> {
     @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Purchase p WHERE p.customer.customerId = :customerId AND p.product.productId = :productId")
     boolean existsByCustomerIdAndProductId(int customerId, int productId);
 
-    // kiểm tra cập nhật quantity dựa trên thông tin id customer và product
+    //trả về dữ liệu nếu tìm thấy id customer và product
     @Query("SELECT p FROM Purchase p WHERE p.customer.customerId = :customerId AND p.product.productId = :productId")
     Optional<Purchase> getByCustomerAndProduct(@Param("customerId") int customerId, @Param("productId") int productId);
 
     // Kiểm tra xem customer có mua product quá 5 lần không
-    @Query("SELECT CASE WHEN p.quantity >= 5 THEN true ELSE false END  FROM Purchase p WHERE p.customer.customerId = :customerId AND p.product.productId = :productId")
+    @Query("SELECT CASE WHEN p.quantity = 5 THEN true ELSE false END  FROM Purchase p WHERE p.customer.customerId = :customerId AND p.product.productId = :productId")
     boolean isCustomerExceededPurchaseLimit(@Param("customerId") int customerId, @Param("productId") int productId);
+
 
 }

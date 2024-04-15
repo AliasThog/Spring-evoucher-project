@@ -1,9 +1,11 @@
 package com.example.evoucherproject.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,21 +17,22 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@JsonIgnoreProperties({"customer"})
 public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int customerId;
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String name;
     @Temporal(TemporalType.DATE)
-    @NotNull
     private Date birthday;
-    @Column(unique = true, nullable = false,length = 50)
+    @Column(unique = true,length = 50)
     private String email;
-    @Column(unique = true, nullable = false,length = 50)
+    @Column(unique = true,length = 50)
     private String address;
-    @Column(unique = true, nullable = false,length = 50)
+    @Column(unique = true,length = 50)
     private String phone;
 
     @OneToOne

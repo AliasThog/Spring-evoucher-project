@@ -1,5 +1,6 @@
 package com.example.evoucherproject.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,8 +32,9 @@ public class Account {
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
-    @OneToOne(mappedBy = "account")
-    private Customer Customer;
+    @JsonIgnore
+    @OneToOne(mappedBy = "account",cascade = CascadeType.PERSIST)
+    private Customer customer;
 
 
     @ManyToMany(fetch = FetchType.EAGER)
