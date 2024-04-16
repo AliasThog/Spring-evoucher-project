@@ -16,19 +16,17 @@ import java.util.List;
 public interface AccountService {
     List<Account> getAllAccounts();
 
-    ResponseEntity<CustomResponse> getAccountById(Long id) ;
+    CustomResponse getAccountById(Long id) ;
 
-    ResponseEntity<CustomResponse> createAccountByUser(CreateAccountByUserDto dto, BindingResult result);
-    ResponseEntity<CustomResponse> createAccountByAdmin(CreateAccountByAdminDto dto, BindingResult result);
+    CustomResponse createAccountByUser(CreateAccountByUserDto dto, BindingResult result);
 
+    CustomResponse updateAccountByAdmin(Long id,CreateAccountByAdminDto dto, BindingResult result);
 
-    ResponseEntity<CustomResponse> updateAccount(Long id, CreateAccountByUserDto dto, BindingResult result);
+    CustomResponse deleteAccount(Long id);
 
-    ResponseEntity<CustomResponse> deleteAccount(Long id);
+    CustomResponse validateUserAndGenerateToken(LoginUserDto dto, BindingResult result, UserDetailsService detailsService);
 
-    ResponseEntity<CustomResponse> validateUserAndGenerateToken(LoginUserDto dto, BindingResult result, UserDetailsService detailsService);
-
-    ResponseEntity<CustomResponse> getUserInfoAfterAuthentication(Authentication authentication);
+    CustomResponse getUserInfoAfterAuthentication(Authentication authentication);
 
 
 }

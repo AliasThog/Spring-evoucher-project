@@ -17,17 +17,9 @@ import java.util.Set;
 @AllArgsConstructor
 
 public class CreateAccountByAdminDto { // have data
-    @NotNull(message = "Username cannot be null")
-    @NotEmpty(message = "Username cannot be empty")
-    private String username;
-
-    @NotNull(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
-    private String password;
 
     private boolean status;
-    @Transient
     private Set<Integer> roleId ;
-    private Set<Role> roles;
+    //ko dc la
 
 }

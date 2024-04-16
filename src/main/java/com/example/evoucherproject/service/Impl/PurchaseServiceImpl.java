@@ -121,13 +121,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         if (voucherOptional.isPresent()) {
             Voucher voucher = voucherOptional.get();
             // nếu tồn tại voucher và thay đổi discount nếu mua quá 5 lần
-            if (voucher.isStatus() == true && DateUtils.isDateToday(voucher.getEndTime()) || purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId) && purchase.getQuantity() < 6) {
+            if (voucher.isStatus() == true &&  purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId)) {
                 voucher.setDiscount(7);
             }
             return voucherRepository.save(voucher);
 
         } else {
-            if (purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId) && purchase.getQuantity() < 6) {
+            if (purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId)) {
                 // còn nếu chưa tồn tại mà khách hàng mua 5 lần thì nhận 1 voucher mới
                 voucherService.saveVoucher(customerId, 7);
             }

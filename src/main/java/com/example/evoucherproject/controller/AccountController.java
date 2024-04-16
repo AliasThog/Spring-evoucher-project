@@ -26,21 +26,13 @@ public class AccountController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomResponse> getAccountById(@PathVariable(name = "id") Long id) {
+    public CustomResponse getAccountById(@PathVariable(name = "id") Long id) {
         return accountService.getAccountById(id);
     }
 
     @PostMapping("/create")
-    public ResponseEntity<CustomResponse> createAccount(@Valid @RequestBody CreateAccountByUserDto dto, BindingResult result) {
+    public CustomResponse createAccount(@Valid @RequestBody CreateAccountByUserDto dto, BindingResult result) {
         return accountService.createAccountByUser(dto, result);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CustomResponse> updateAccount(@PathVariable Long id, @Valid @RequestBody CreateAccountByUserDto dto, BindingResult result) {
-        return accountService.updateAccount(id, dto, result);
-    }
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<CustomResponse> deleteCustomer(@PathVariable Long id) {
-        return accountService.deleteAccount(id);
-    }
 }

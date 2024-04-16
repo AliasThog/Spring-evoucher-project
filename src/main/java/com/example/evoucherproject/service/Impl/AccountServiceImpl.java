@@ -47,23 +47,22 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public ResponseEntity<CustomResponse> getAccountById(Long id) {
+    public CustomResponse getAccountById(Long id) {
         try {
             Optional<Account> exitsAccount = accountRepository.findById(id);
             if (!exitsAccount.isPresent()) {
                 throw new CustomException("Account ko tim thay!", HttpStatus.NOT_FOUND);
             }
 
-            return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse("Account with id: " + id + "successfully!",
-                    HttpStatus.OK.value(), exitsAccount));
+            return new CustomResponse("Account with id: " + id + "successfully!",
+                    HttpStatus.OK.value(), exitsAccount);
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), ""));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
         }
     }
 
     @Override
-    public ResponseEntity<CustomResponse> createAccountByUser(CreateAccountByUserDto dto, BindingResult result) {
+    public CustomResponse createAccountByUser(CreateAccountByUserDto dto, BindingResult result) {
         try {
             if (result.hasErrors()) {
                 throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
@@ -72,38 +71,17 @@ public class AccountServiceImpl implements AccountService {
             account.setDate(DateUtils.currentDateTime());
             account.setPassword(passwordEncoder.encode(dto.getPassword()));
             account.setStatus(true);
-            account.setRoles(roleService.getRolesByRoleIds(Set.of(1)));
+            account.setRoles(roleService.getRolesByRoleIds(Set.of(2)));
             account.setCustomer(Customer.builder().name(account.getUsername()).account(account).build());
-            return ResponseEntity.status(HttpStatus.CREATED).body(new CustomResponse("Account created by User successfully!",
-                    HttpStatus.CREATED.value(), accountRepository.save(account)));
+            return new CustomResponse("Account created by User successfully!",
+                    HttpStatus.CREATED.value(), accountRepository.save(account));
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto()));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto());
         }
     }
 
     @Override
-    public ResponseEntity<CustomResponse> createAccountByAdmin(CreateAccountByAdminDto dto, BindingResult result) {
-        try {
-            if (result.hasErrors()) {
-                throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
-            }
-            Account account = DataMapper.toEntity(dto, Account.class);
-            account.setDate(DateUtils.currentDateTime());
-            account.setPassword(passwordEncoder.encode(dto.getPassword()));
-            account.setStatus(dto.isStatus());
-            account.setRoles(roleService.getRolesByRoleIds(dto.getRoleId()));
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(new CustomResponse("Account created by Admin successfully!",
-                    HttpStatus.CREATED.value(),  accountRepository.save(account)));
-        } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto()));
-        }
-    }
-
-    @Override
-    public ResponseEntity<CustomResponse> updateAccount(Long id, CreateAccountByUserDto dto, BindingResult result) {
+    public CustomResponse updateAccountByAdmin(Long id,CreateAccountByAdminDto dto, BindingResult result) {
         try {
             Optional<Account> account = accountRepository.findById(id);
             if (!account.isPresent()) {
@@ -112,37 +90,36 @@ public class AccountServiceImpl implements AccountService {
             if (result.hasErrors()) {
                 throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
             }
-            Account updatedAccount = DataMapper.toEntity(dto, Account.class);
 
-            updatedAccount.setDate(DateUtils.currentDateTime());
+            account.get().setStatus(dto.isStatus());
+            account.get().setRoles(roleService.getRolesByRoleIds(dto.getRoleId()));
 
-            updatedAccount.setAccountId(id);
-
-            return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse("Account update successfully!",
-                    HttpStatus.OK.value(), accountRepository.save(updatedAccount)));
+            return new CustomResponse("Account update by Admin successfully!",
+                    HttpStatus.CREATED.value(),  accountRepository.save(account.get()));
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateAccountByUserDto()));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto());
         }
     }
 
+
     @Override
-    public ResponseEntity<CustomResponse> deleteAccount(Long id) {
+    public CustomResponse deleteAccount(Long id) {
         try {
             Optional<Account> existingAccount = accountRepository.findById(id);
             if (!existingAccount.isPresent()) {
                 throw new CustomException("Account not found: " + id, HttpStatus.BAD_REQUEST);
             }
             accountRepository.deleteById(id);
-            return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse("Account deleted successfully!", HttpStatus.ACCEPTED.value(), ""));
+            return new CustomResponse("Account deleted successfully!", HttpStatus.ACCEPTED.value(), "");
 
         } catch (CustomException e) {
 
-            return ResponseEntity.status(e.getHttpStatus()).body(new CustomResponse(e.getMessage(), e.getHttpStatus().value(), null));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), null);
         }
     }
 
     @Override
-    public ResponseEntity<CustomResponse> validateUserAndGenerateToken(LoginUserDto dto, BindingResult result, UserDetailsService detailsService) {
+    public CustomResponse validateUserAndGenerateToken(LoginUserDto dto, BindingResult result, UserDetailsService detailsService) {
         try {
             CustomUserDetails userDetails = (CustomUserDetails) detailsService.loadUserByUsername(dto.getUsername());
 
@@ -154,16 +131,15 @@ public class AccountServiceImpl implements AccountService {
             }
             // create JWT
             String token = jwtTokenProvider.generateToken(userDetails);
-            return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse("User Login successfully!", HttpStatus.CREATED.value(), token));
+            return new CustomResponse("User Login successfully!", HttpStatus.CREATED.value(), token);
 
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), ""));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
         }
     }
 
     @Override
-    public ResponseEntity<CustomResponse> getUserInfoAfterAuthentication(Authentication authentication) {
+    public CustomResponse getUserInfoAfterAuthentication(Authentication authentication) {
         try {
             if (authentication == null && !authentication.isAuthenticated()) {
                 throw new CustomException("UNAUTHORIZED", HttpStatus.UNAUTHORIZED);
@@ -171,10 +147,9 @@ public class AccountServiceImpl implements AccountService {
             CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
             String username = authentication.getName(); // Lấy tên người dùng từ xác thực
             List<String> roles = AuthenticationUtils.getRoles(customUserDetails);
-            return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse("*Welcome " + username + " to page home !!", HttpStatus.OK.value(), "username : " + username + " - " + roles));
+            return new CustomResponse("*Welcome " + username + " to page home !!", HttpStatus.OK.value(), "username : " + username + " - " + roles);
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), ""));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
         }
 
     }

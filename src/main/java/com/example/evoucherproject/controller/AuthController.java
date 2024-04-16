@@ -1,6 +1,7 @@
 package com.example.evoucherproject.controller;
 
 import com.example.evoucherproject.model.dto.CustomResponse;
+import com.example.evoucherproject.model.dto.request.account.CreateAccountByAdminDto;
 import com.example.evoucherproject.model.dto.request.account.LoginUserDto;
 import com.example.evoucherproject.service.AccountService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,20 +24,20 @@ public class AuthController {
     private AccountService accountService;
 
     @PostMapping("/login-jwt")
-    public ResponseEntity<CustomResponse> authenticateUser(@RequestBody @Valid LoginUserDto dto , BindingResult result) {
+    public CustomResponse authenticateUser(@RequestBody @Valid LoginUserDto dto , BindingResult result) {
         return accountService.validateUserAndGenerateToken(dto,result,detailsService);
     }
     @GetMapping("/admin")
-    public ResponseEntity<CustomResponse> admin() {
-        return ResponseEntity.ok(new CustomResponse("Welcome come admin", HttpStatus.OK.value(), ""));
+    public CustomResponse admin() {
+        return new CustomResponse("Welcome come admin", HttpStatus.OK.value(), "");
     }
     @GetMapping("/user")
-    public ResponseEntity<CustomResponse> user() {
-        return ResponseEntity.ok(new CustomResponse("Welcome come USER", HttpStatus.OK.value(), ""));
+    public CustomResponse user() {
+        return new CustomResponse("Welcome come USER", HttpStatus.OK.value(), "");
     }
 
     @GetMapping("/home")
-    public ResponseEntity<CustomResponse> home(Authentication authentication ) {
+    public CustomResponse home(Authentication authentication ) {
         return accountService.getUserInfoAfterAuthentication(authentication);
     }
     @PostMapping("/logout")
@@ -44,4 +45,12 @@ public class AuthController {
         return ResponseEntity.ok("/login");
     }
 
+    @PutMapping("/admin/update/{id}")
+    public CustomResponse updateAccountByAdmin(@PathVariable Long id,@RequestBody @Valid CreateAccountByAdminDto dto,BindingResult result) {
+        return accountService.updateAccountByAdmin(id,dto, result);
+    }
+    @DeleteMapping("/admin/delete/{id}")
+    public CustomResponse deleteAccountByAdmin(@PathVariable Long id) {
+        return accountService.deleteAccount(id);
+    }
 }

@@ -33,7 +33,7 @@ public class Account {
     private Date date;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "account",cascade = CascadeType.PERSIST)
+    @OneToOne(mappedBy = "account",cascade = CascadeType.ALL)
     private Customer customer;
 
 

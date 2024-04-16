@@ -25,33 +25,31 @@ public class ProductServiceImpl implements ProductService {
     private  ProductRepository productRepository;
 
     @Override
-    public ResponseEntity<CustomResponse> getbyidProduct(Integer id) {
+    public CustomResponse getbyidProduct(Integer id) {
         try {
             Optional<Product> exitsProduct = productRepository.findById(id);
             if (!exitsProduct.isPresent()) {
                 throw new CustomException("Product ko tim thay!", HttpStatus.NOT_FOUND);
             }
 
-            return ResponseEntity.status(HttpStatus.OK).body(new CustomResponse(" Product with id: " + id + "đã được tìm thấy!",
-                    HttpStatus.OK.value(), exitsProduct));
+            return new CustomResponse(" Product with id: " + id + "đã được tìm thấy!",
+                    HttpStatus.OK.value(), exitsProduct);
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), ""));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
         }
     }
 
     @Override
-    public ResponseEntity<CustomResponse> createProduct(CreateProductDto dto, BindingResult result) {
+    public CustomResponse createProduct(CreateProductDto dto, BindingResult result) {
         try {
             if (result.hasErrors()) {
                 throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
             }
             Product product = DataMapper.toEntity(dto, Product.class);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new CustomResponse("Product created successfully!",
-                    HttpStatus.CREATED.value(), productRepository.save(product)));
+            return new CustomResponse("Product created successfully!",
+                    HttpStatus.CREATED.value(), productRepository.save(product));
         } catch (CustomException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body(
-                    new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto()));
+            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto());
         }
     }
 }
