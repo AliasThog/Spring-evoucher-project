@@ -36,6 +36,8 @@ public class Voucher {
     @JoinColumn(name = "customerId")
     private Customer customer;
 
-
+    @ManyToOne
+    @JoinColumn(name = "voucherCateId")
+    private VoucherCategory voucherCategory;
 }
 

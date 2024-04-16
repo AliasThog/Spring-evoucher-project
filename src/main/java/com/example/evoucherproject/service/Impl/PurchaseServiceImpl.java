@@ -55,11 +55,11 @@ public class PurchaseServiceImpl implements PurchaseService {
         Purchase purchase = purchaseRepository.getByCustomerAndProduct(customerId, productId).get();
         List<String> ls = new ArrayList<>();
         Double money = purchaseRepository.TotalQuantityByCustomerIdAndProductId(customerId, productId);
-        ls.add("Khách hàng id : " + purchase.getCustomer().getCustomerId() + " - " + purchase.getCustomer().getName() + " mua sản phẩm : " + purchase.getProduct().getName());
-        ls.add("tổng giá tiền hiện tại : " + money.toString());
+        ls.add("Customer id: " + purchase.getCustomer().getCustomerId() + " - " + purchase.getCustomer().getName() + " buy product: " + purchase.getProduct().getName());
+        ls.add("Total current: " + money.toString());
         Double amount = money - (money * (voucher.getDiscount()) / 100);
-        ls.add("sau khi áp dụng mã voucher " + voucher.getDiscount() + "% : " + amount);
-        ls.add("Số lượng sản phẩm : " + purchase.getQuantity());
+        ls.add("After payment, applying the voucher code: "+ voucher.getVoucherCategory().getName() + " " + voucher.getDiscount() + "% : " + amount);
+        ls.add("Quantity product: " + purchase.getQuantity());
         return ls;
     }
 
