@@ -128,8 +128,8 @@ public class PurchaseServiceImpl implements PurchaseService {
 
         } else {
             if (purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId)) {
-                // còn nếu chưa tồn tại mà khách hàng mua 5 lần thì nhận 1 voucher mới
-                voucherService.saveVoucher(customerId, 7);
+                // còn nếu chưa tồn tại mà khách hàng mua 5 lần thì nhận 1 voucher discount mới
+                voucherService.saveVoucher(customerId, 2);
             }
         }
         return new Voucher();
