@@ -21,13 +21,13 @@ public class VoucherController {
     @Schema(description = "claim voucher with Shipping",name = "claim voucher with Shipping")
     @GetMapping("/5_percent/{customerId}")
     public ResponseEntity<CustomResponse> claimVoucherWith5PercentShipping(@PathVariable(name = "customerId"  ) int customerId) {
-        return ResponseEntity.ok().body(voucherService.saveVoucher(customerId,1));
+        return ResponseEntity.ok().body(voucherService.saveVoucher(customerId,1,5));
     }
 
     @Schema(description = "claim voucher with Discount" ,name = "claim voucher with Discount")
     @GetMapping("/3_percent/{customerId}")
     public ResponseEntity<CustomResponse> claimVoucherWith3PercentDiscount(@PathVariable(name = "customerId") int customerId) {
-        return ResponseEntity.ok().body(voucherService.saveVoucher(customerId,2));
+        return ResponseEntity.ok().body(voucherService.saveVoucher(customerId,2,3));
     }
 
 }

@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         try {
             deleteExpiredVouchersByCustomerId(customerId);
             Purchase purchase = addOrUpdateCustomerBuyProduct(customerId, productId);
-            Voucher voucher = insertOrUpdateVoucher(customerId, productId, purchase);
+            Voucher voucher = insertOrUpdateVoucher(customerId, productId);
             return new CustomResponse("Payment Successfully!!!", HttpStatus.OK.value(), getInformationCustomerBuyProduct(customerId, productId, voucher));
         } catch (CustomException e) {
             return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
@@ -114,22 +115,24 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
 
     }
-
-    private Voucher insertOrUpdateVoucher(int customerId, int productId, Purchase purchase) {
+    // này chỉ áp dung voucher khi mua hàng quá 5 lần
+    private Voucher insertOrUpdateVoucher(int customerId, int productId) {
         Optional<Voucher> voucherOptional = voucherRepository.findByCustomerCustomerId(customerId);
-        // nếu voucher tồn tại  và trạng thái bằng true và  còn hàng sử dụng thì sẽ update voucher
+        // nếu voucher tồn tại
         if (voucherOptional.isPresent()) {
             Voucher voucher = voucherOptional.get();
-            // nếu tồn tại voucher và thay đổi discount nếu mua quá 5 lần
-            if (voucher.isStatus() == true &&  purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId)) {
+            // nếu tồn tại voucher discount và nếu mua quá 5 lần, ko áp dụng voucher shipper
+            if (voucher.isStatus() == true && voucher.getVoucherCategory().getVoucherCateId() == 2  &&  purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId)) {
                 voucher.setDiscount(7);
+                voucher.setStartTime(new Date());
+                voucher.setEndTime(DateUtils.getEndDate());
             }
             return voucherRepository.save(voucher);
 
-        } else {
+        } else { // nếu voucher chưa tồn tại
             if (purchaseRepository.isCustomerExceededPurchaseLimit(customerId, productId)) {
                 // còn nếu chưa tồn tại mà khách hàng mua 5 lần thì nhận 1 voucher discount mới
-                voucherService.saveVoucher(customerId, 2);
+                voucherService.saveVoucher(customerId, 2,7);
             }
         }
         return new Voucher();

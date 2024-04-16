@@ -25,7 +25,7 @@ public class VoucherServiceImpl implements VoucherService {
     private CustomerRepository customerRepository;
 
     @Override
-    public CustomResponse saveVoucher(int customerId, int voucherCategoryId) {
+    public CustomResponse saveVoucher(int customerId, int voucherCategoryId, int discount) {
 
         // nếu customer ko tồn tại trong voucher sẽ báo lỗi
         // voucher sẽ 2 loại update hay new mới
@@ -36,7 +36,7 @@ public class VoucherServiceImpl implements VoucherService {
             if (!customer.isPresent() && !voucher.isPresent()) {
                 throw new CustomException("Your id  " + customerId + "customer does not exist .", HttpStatus.NOT_FOUND);
             }
-            String getInfoVoucher = setVoucherByCategory(customer, voucher, voucherCategoryId);
+            String getInfoVoucher = setVoucherByCategory(customer, voucher, voucherCategoryId,discount);
 
             return new CustomResponse(getInfoVoucher, HttpStatus.OK.value(), "voucher");
 
@@ -46,46 +46,25 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
 
-    private String setVoucherByCategory(Optional<Customer> customer, Optional<Voucher> voucher, int voucherCategoryId) {
+    private String setVoucherByCategory(Optional<Customer> customer, Optional<Voucher> voucher, int voucherCategoryId, int discount) {
         String mess = "";
+
+        Voucher newVoucher = voucher.orElseGet(() -> Voucher.builder()
+                .customer(customer.get())
+                .discount(discount)
+                .status(true)
+                .startTime(new Date())
+                .endTime(DateUtils.getEndDate())
+                .build());
+
         switch (voucherCategoryId) {
             case 1: {
-                voucher.ifPresentOrElse(
-                        v -> {
-                            v.setDiscount(5);
-                            voucherRepository.save(v);
-                        },
-                        () -> {
-                            Voucher newVoucher = Voucher.builder()
-                                    .customer(customer.get())
-                                    .discount(voucherCategoryId)
-                                    .status(true)
-                                    .startTime(new Date())
-                                    .endTime(DateUtils.getEndDate())
-                                    .build();
-                            voucherRepository.save(newVoucher);
-                        }
-                );
+                newVoucher.setDiscount(discount);
                 mess = "You have received a 5% off Shipping coupon!";
                 break;
             }
             case 2: {
-                voucher.ifPresentOrElse(
-                        v -> {
-                            v.setDiscount(3);
-                            voucherRepository.save(v);
-                        },
-                        () -> {
-                            Voucher newVoucher = Voucher.builder()
-                                    .customer(customer.get())
-                                    .discount(3)
-                                    .status(true)
-                                    .startTime(new Date())
-                                    .endTime(DateUtils.getEndDate())
-                                    .build();
-                            voucherRepository.save(newVoucher);
-                        }
-                );
+                newVoucher.setDiscount(discount);
                 mess = "You have received a 3% off Discount coupon!";
                 break;
             }
@@ -94,7 +73,8 @@ public class VoucherServiceImpl implements VoucherService {
                 break;
             }
         }
+
+        voucherRepository.save(newVoucher);
         return mess;
     }
-    //  thêm kh sẽ được theo voucher với đk như nào, đảm bảo kh tồn tại , thứ 2 nếu kh chưa có voucher sẽ thêm voucher , còn có rồi ko canan thêm vào b
 }
