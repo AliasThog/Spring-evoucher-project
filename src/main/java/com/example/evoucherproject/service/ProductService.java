@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 
 public interface ProductService {
-    CustomResponse getbyidProduct(Integer id);
+    CustomResponse getByidProduct(Integer id);
     CustomResponse createProduct(CreateProductDto dto, BindingResult result);
 
 }

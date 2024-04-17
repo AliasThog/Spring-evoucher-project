@@ -41,14 +41,10 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     public CustomResponse paymentCustomer(int customerId, int productId) {
-        try {
-            deleteExpiredVouchersByCustomerId(customerId);
-            Purchase purchase = addOrUpdateCustomerBuyProduct(customerId, productId);
-            Voucher voucher = insertOrUpdateVoucher(customerId, productId);
-            return new CustomResponse("Payment Successfully!!!", HttpStatus.OK.value(), getInformationCustomerBuyProduct(customerId, productId, voucher));
-        } catch (CustomException e) {
-            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
-        }
+        deleteExpiredVouchersByCustomerId(customerId);
+        addOrUpdateCustomerBuyProduct(customerId, productId);
+        Voucher voucher = insertOrUpdateVoucher(customerId, productId);
+        return new CustomResponse("Payment Successfully!!!", HttpStatus.OK, getInformationCustomerBuyProduct(customerId, productId, voucher));
 
     }
 
@@ -64,7 +60,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         return ls;
     }
 
-    /*    private void applyDiscountDuringLateNight(Voucher voucher, int customerId) {
+/*        private void applyDiscountDuringLateNight(Voucher voucher, int customerId) {
             LocalDateTime currentTime = LocalDateTime.now();
             LocalTime startTime = LocalTime.of(0, 0); // 12h tối
             LocalTime endTime = LocalTime.of(1, 0); // 1h sáng
@@ -93,8 +89,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                 voucher = insertOrUpdateVoucher(customerId);
                 return;
             }
-        }
-    */
+        }*/
     private Purchase addOrUpdateCustomerBuyProduct(int customerId, int productId) {
         Optional<Purchase> purchase = purchaseRepository.getByCustomerAndProduct(customerId, productId);
         Optional<Customer> customer = customerRepository.findById(customerId);

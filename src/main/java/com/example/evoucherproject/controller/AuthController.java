@@ -29,11 +29,11 @@ public class AuthController {
     }
     @GetMapping("/admin")
     public CustomResponse admin() {
-        return new CustomResponse("Welcome come admin", HttpStatus.OK.value(), "");
+        return new CustomResponse("Welcome come admin", HttpStatus.OK, "");
     }
     @GetMapping("/user")
     public CustomResponse user() {
-        return new CustomResponse("Welcome come USER", HttpStatus.OK.value(), "");
+        return new CustomResponse("Welcome come USER", HttpStatus.OK, "");
     }
 
     @GetMapping("/home")

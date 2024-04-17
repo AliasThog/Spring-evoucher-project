@@ -25,36 +25,25 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomResponse getByIdCustomer(Integer id) {
-        try {
-            Optional<Customer> exitsCustomer = customerRepository.findById(id);
-            if (!exitsCustomer.isPresent()) {
-                throw new CustomException("Khach hang ko tim thay!", HttpStatus.NOT_FOUND);
-            }
-            return new CustomResponse("Create customer with your id  " + id + "successfully!",
-                    HttpStatus.OK.value(), exitsCustomer);
-        } catch (CustomException e) {
-            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
+        Optional<Customer> exitsCustomer = customerRepository.findById(id);
+        if (!exitsCustomer.isPresent()) {
+            throw new CustomException("Khach hang ko tim thay!", HttpStatus.NOT_FOUND);
         }
-
+        return new CustomResponse("Create customer with your id  " + id + "successfully!",
+                HttpStatus.OK, exitsCustomer);
     }
 
 
     @Override
     public CustomResponse createEmployee(CreateCustomerDto dto, BindingResult result) {
-        try {
-            // id phone đã tồn tại ko đc thêm mới
-            if (customerRepository.existsByPhone(dto.getPhone())) {
-                throw new CustomException("Phone existing!", HttpStatus.CONFLICT);
-            }
-            if (result.hasErrors()) {
-                throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
-            }
-            Customer customer = DataMapper.toEntity(dto, Customer.class);
-            return new CustomResponse("Customer created successfully!",
-                    HttpStatus.CREATED.value(), customerRepository.save(customer));
-        } catch (CustomException e) {
-            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto());
+        if (customerRepository.existsByPhone(dto.getPhone())) {
+            throw new CustomException("Phone existing!", HttpStatus.CONFLICT);
         }
-
+        if (result.hasErrors()) {
+            throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
+        }
+        Customer customer = DataMapper.toEntity(dto, Customer.class);
+        return new CustomResponse("Customer created successfully!",
+                HttpStatus.CREATED, customerRepository.save(customer));
     }
 }

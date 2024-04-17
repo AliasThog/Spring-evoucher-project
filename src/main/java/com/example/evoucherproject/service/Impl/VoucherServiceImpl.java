@@ -26,23 +26,15 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public CustomResponse saveVoucher(int customerId, int voucherCategoryId, int discount) {
+        Optional<Customer> customer = customerRepository.findById(customerId);
+        Optional<Voucher> voucher = voucherRepository.findByCustomerCustomerId(customerId);
 
-        // nếu customer ko tồn tại trong voucher sẽ báo lỗi
-        // voucher sẽ 2 loại update hay new mới
-        try {
-            Optional<Customer> customer = customerRepository.findById(customerId);
-            Optional<Voucher> voucher = voucherRepository.findByCustomerCustomerId(customerId);
-
-            if (!customer.isPresent() && !voucher.isPresent()) {
-                throw new CustomException("Your id  " + customerId + "customer does not exist .", HttpStatus.NOT_FOUND);
-            }
-            String getInfoVoucher = setVoucherByCategory(customer, voucher, voucherCategoryId,discount);
-
-            return new CustomResponse(getInfoVoucher, HttpStatus.OK.value(), "voucher");
-
-        } catch (CustomException e) {
-            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new Voucher());
+        if (!customer.isPresent() && !voucher.isPresent()) {
+            throw new CustomException("Your id  " + customerId + "customer does not exist .", HttpStatus.NOT_FOUND);
         }
+        String getInfoVoucher = setVoucherByCategory(customer, voucher, voucherCategoryId,discount);
+
+        return new CustomResponse(getInfoVoucher, HttpStatus.OK, "voucher");
     }
 
 

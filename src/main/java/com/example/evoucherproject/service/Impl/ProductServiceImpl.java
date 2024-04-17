@@ -25,31 +25,23 @@ public class ProductServiceImpl implements ProductService {
     private  ProductRepository productRepository;
 
     @Override
-    public CustomResponse getbyidProduct(Integer id) {
-        try {
-            Optional<Product> exitsProduct = productRepository.findById(id);
-            if (!exitsProduct.isPresent()) {
-                throw new CustomException("Product ko tim thay!", HttpStatus.NOT_FOUND);
-            }
-
-            return new CustomResponse(" Product with id: " + id + "đã được tìm thấy!",
-                    HttpStatus.OK.value(), exitsProduct);
-        } catch (CustomException e) {
-            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), "");
+    public CustomResponse getByidProduct(Integer id) {
+        Optional<Product> exitsProduct = productRepository.findById(id);
+        if (!exitsProduct.isPresent()) {
+            throw new CustomException("Product ko tim thay!", HttpStatus.NOT_FOUND);
         }
+
+        return new CustomResponse(" Product with id: " + id + "đã được tìm thấy!",
+                HttpStatus.OK, exitsProduct);
     }
 
     @Override
     public CustomResponse createProduct(CreateProductDto dto, BindingResult result) {
-        try {
-            if (result.hasErrors()) {
-                throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
-            }
-            Product product = DataMapper.toEntity(dto, Product.class);
-            return new CustomResponse("Product created successfully!",
-                    HttpStatus.CREATED.value(), productRepository.save(product));
-        } catch (CustomException e) {
-            return new CustomResponse(e.getMessage(), e.getHttpStatus().value(), new CreateCustomerDto());
+        if (result.hasErrors()) {
+            throw new CustomException(ValidationUtils.getValidationErrorString(result), HttpStatus.BAD_REQUEST);
         }
+        Product product = DataMapper.toEntity(dto, Product.class);
+        return new CustomResponse("Product created successfully!",
+                HttpStatus.CREATED, productRepository.save(product));
     }
 }

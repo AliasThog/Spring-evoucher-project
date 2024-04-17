@@ -5,7 +5,6 @@ import com.example.evoucherproject.model.dto.request.product.CreateProductDto;
 import com.example.evoucherproject.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +16,7 @@ public class ProductController{
 
     @GetMapping("/{id}")
     public CustomResponse getProductById(@PathVariable(name = "id") Integer id) {
-        return productService.getbyidProduct(id);
+        return productService.getByidProduct(id);
     }
 
     @PostMapping()
