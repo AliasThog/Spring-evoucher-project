@@ -28,7 +28,6 @@ public class VoucherServiceImpl implements VoucherService {
     public CustomResponse saveVoucher(int customerId, int voucherCategoryId, int discount) {
         Optional<Customer> customer = customerRepository.findById(customerId);
         Optional<Voucher> voucher = voucherRepository.findByCustomerCustomerId(customerId);
-
         if (!customer.isPresent() && !voucher.isPresent()) {
             throw new CustomException("Your id  " + customerId + "customer does not exist .", HttpStatus.NOT_FOUND);
         }
@@ -39,7 +38,7 @@ public class VoucherServiceImpl implements VoucherService {
 
 
     private String setVoucherByCategory(Optional<Customer> customer, Optional<Voucher> voucher, int voucherCategoryId, int discount) {
-        String mess = "";
+        String mess ;
 
         Voucher newVoucher = voucher.orElseGet(() -> Voucher.builder()
                 .customer(customer.get())

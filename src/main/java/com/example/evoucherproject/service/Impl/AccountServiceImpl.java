@@ -116,7 +116,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public CustomResponse getUserInfoAfterAuthentication(Authentication authentication) {
-        if (authentication == null && !authentication.isAuthenticated()) {
+        if (!authentication.isAuthenticated()) {
             throw new CustomException("UNAUTHORIZED", HttpStatus.UNAUTHORIZED);
         }
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
